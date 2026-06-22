@@ -65,6 +65,8 @@ VEIL.scenes['act4_earth'] = class EarthScene {
         // landing terrace after the bridge
         { x: 3160, y: 470, w: 320, h: 320 },
         { x: 3340, y: 360, w: 140, h: 14, oneway: true },
+        // secret: a hidden upper shelf the cliff kept to itself (optional climb)
+        { x: 3300, y: 268, w: 160, h: 12, oneway: true },
         // descent steps toward the arena
         { x: 3560, y: 560, w: 240, h: 230 },
         { x: 3880, y: 600, w: 240, h: 200 },
@@ -100,6 +102,9 @@ VEIL.scenes['act4_earth'] = class EarthScene {
         { kind: 'husk', x: 3260, y: 470 },
         { kind: 'brute', x: 3680, y: 560, opts: { tint: '#b388ff' } },
         { kind: 'husk', x: 4060, y: 600 },
+        // a corrupted wisp drifts over the high bridge; a husk guards the early ledges
+        { kind: 'wisp', x: 2820, y: 300 },
+        { kind: 'husk', x: 1880, y: 588 },
       ],
       triggers: [
         // intro (fires once the player takes a step)
@@ -110,6 +115,20 @@ VEIL.scenes['act4_earth'] = class EarthScene {
         { x: 3160, y: 0, w: 50, h: 720, once: true, onEnter: () => self._whisper(2) },
         // arena seal — start the boss
         { x: 4400, y: 0, w: 60, h: 720, once: true, onEnter: () => self._startBoss() },
+      ],
+      pickups: [
+        // reward on the secret shelf
+        { x: 3320, y: 248, kind: 'health', r: 14,
+          onCollect: () => { e.state.hp = U.clamp(e.state.hp + 35, 0, e.state.maxHp); e.audio.sfx('heal'); VEIL.ui.toast('✦ Heartroot — vigor restored (+35)'); } },
+      ],
+      interactables: [
+        // carved lore the player can read by pressing E
+        { x: 1060, y: 548, markY: 522, r: 70, label: 'Cliff mural', color: '#c9b3ff', once: true, keepMarker: true, sfx: 'whisper',
+          onInteract: () => self._mural(3) },
+        { x: 3420, y: 268, markY: 244, r: 70, label: 'Worn rune', color: '#9a6bff', once: true, keepMarker: true, sfx: 'fragment',
+          onInteract: () => self._echo('weight') },
+        { x: 4250, y: 636, markY: 600, r: 74, label: 'Tharos’ mark', color: '#f4c560', once: true, keepMarker: true, sfx: 'whisper',
+          onInteract: () => self._mural(5) },
       ],
       goal: { x: GOAL_X, y: 0, color: '#f4c560', onReach: () => {} },
       paintBg: (ctx, w, t) => self._bg(ctx, w, t),
@@ -147,6 +166,22 @@ VEIL.scenes['act4_earth'] = class EarthScene {
     ];
     VEIL.ui.toast('✦ ' + lines[i % lines.length], 4.5);
     this.e.audio.sfx('whisper');
+  }
+  // press-E lore: a cliff mural (short narration)
+  _mural(i) {
+    const m = VEIL.story.murals[i % VEIL.story.murals.length];
+    // defer one frame so the same 'E' press doesn't instantly advance the dialogue
+    setTimeout(() => VEIL.dialogue.play([{ who: 'narrator', text: m }]), 0);
+  }
+  // press-E lore: reveal an Echo of the Veil and record it
+  _echo(id) {
+    const ec = VEIL.story.echoes.find((x) => x.id === id);
+    if (!ec) return;
+    this.e.state.flags['echo_' + id] = true; this.e.save();
+    setTimeout(() => VEIL.dialogue.play([
+      { who: 'narrator', text: '✦ Echo of the Veil — “' + ec.title + '”' },
+      { who: 'narrator', text: ec.text },
+    ]), 0);
   }
   _startBoss() {
     if (this.bossStarted || !this.boss) return;

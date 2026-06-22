@@ -57,11 +57,39 @@ S.whispers = [
   'Without shadow, the world burns too bright.',
   'We sealed what we could not understand.',
   'Follow the needle. It remembers the way.',
+  'A lamp in an empty room reveals nothing but itself.',
+  'They called it the Missing Spirit. It was only sent away.',
+  'Every door the light fears, the dark has already opened.',
+  'You are not the first to walk down. You may be the first to return.',
 ];
 S.murals = [
   'The mural shows five lights ringed about a tree — until one light is struck away, and the tree begins to wither.',
   'Here the elements war: gold against gold, with no shadow to hold the line between them.',
   'A figure kneels before an empty frame where the fifth sigil should burn.',
+  'Five children stand in a circle of hands. The smallest, robed in violet, is being led quietly away while the others look up at the sun.',
+  'A river is painted twice — once bright and flat, once deep with a dark bed beneath. Only the deep one is shown holding fish.',
+  'The Master, younger here, lifts a seal over a sleeping shadow. His face is not cruel. It is afraid.',
+];
+
+/* ---------- Echoes of the Veil — discoverable lore codex ----------
+   Revealed at lore-rune interactables; flag stored as flags['echo_<id>']. */
+S.echoes = [
+  { id: 'origin', realm: 'hall', title: 'On the First Balance',
+    text: 'When the world was poured, it was poured in five measures. Four could be seen. The fifth was the space between the others — the pause that let a note be heard as music and not as noise.' },
+  { id: 'fear', realm: 'descent', title: 'Why the Sealing',
+    text: 'It is written that no realm asked for the Dark to be bound. Only the Keepers, in council, feared what they could not measure. A thing unmeasured, they reasoned, cannot be trusted. So they bound the unmeasurable, and called the binding wisdom.' },
+  { id: 'roots', realm: 'forest', title: 'The Patient Rot',
+    text: 'The Forest keeps a secret the others forgot: nothing here grows except in what has died. Pull the decay from the soil and the soil dies too. The Spirit does not mourn the fallen leaf. It eats it, and climbs.' },
+  { id: 'weight', realm: 'earth', title: 'Tharos, Before',
+    text: 'Tharos was not always stone. He was the Guardian who carried the dead down into the ground so the living could stand upon them. When the Dark was sealed, the dead stopped sinking. They simply… accumulated. He has been bearing that weight, alone, ever since.' },
+  { id: 'mirror', realm: 'water', title: "Nerai's Reflection",
+    text: 'A perfect mirror, Nerai learned, shows you nothing — only a stranger doing exactly what you do. It is the flaw in the glass, the shadow under the surface, that lets you finally see your own face looking back.' },
+  { id: 'flame', realm: 'fire', title: "Rion's Forge",
+    text: 'Fire that cannot be contained is not strength; it is a tantrum. Rion forged a blade for every Keeper who came to fight him, and broke each one — not on the anvil, but by asking a single question: what will you do when the burning is done?' },
+  { id: 'wind', realm: 'air', title: 'The Anchor of Aelra',
+    text: 'The wind told Aelra it wished to be free of the ground. She let it go. It rose, thinned, and forgot what it was, until there was nothing left to call wind at all. Freedom, she decided, is not the absence of an anchor. It is the choice of which one to trust.' },
+  { id: 'veil', realm: 'return', title: 'What the Veil Is',
+    text: 'The Veil is not a wall between light and dark. It is the seam where they are sewn together. Tear it down and they do not blend — they cancel. The disciple who understands this is no longer a student of either side.' },
 ];
 S.act2Intro = [
   { who: 'narrator', text: 'The Compass warms in your hand. Its needle pulls you down, out of the clouds.' },
@@ -85,11 +113,14 @@ S.act3Cleansed = [
 S.act4Intro = [
   { who: 'tharos', text: 'Dark rots the ground it touches. How can you defend what decays?' },
   { who: 'disciple', text: 'Decay feeds life. You’ve forgotten that.' },
-  { who: 'tharos', text: 'Then carry the Heartstone to the summit — and prove that weight can be borne without breaking.' },
+  { who: 'tharos', text: 'Bold words, for one so light. The cliffs here remember every step that broke them.' },
+  { who: 'tharos', text: 'I give you the Earth Gauntlets — to Block what falls, and to Slam the ground that lies.' },
+  { who: 'tharos', text: 'But the corruption has woken a thing of mine. A Golem, grief-heavy and hollow. Lay it down, and I will believe you.' },
 ];
 S.act4Win = [
+  { who: 'tharos', text: 'It is quiet. For the first time in an age… the weight has set down.' },
   { who: 'tharos', text: 'The stone did not crush you. Perhaps decay does renew.' },
-  { who: 'tharos', text: 'Take the Earth Gauntlets. And take this truth.' },
+  { who: 'tharos', text: 'Take the truth I have carried so long I forgot it was light.' },
   { who: 'narrator', text: 'Fragment of Truth — “Decay renews.”' },
 ];
 
@@ -164,6 +195,23 @@ S.endingLight = [
 ];
 
 /* ---------- Tutorials / hints ---------- */
+/* ---------- Shared lore helpers (any scene can call) ----------
+   Reveal an Echo of the Veil (records flags['echo_<id>']) or a mural.
+   Deferred a frame so the same 'E' press can't instantly advance the text. */
+S.revealEcho = function (engine, id) {
+  const ec = S.echoes.find((x) => x.id === id);
+  if (!ec) return;
+  engine.state.flags['echo_' + id] = true; engine.save();
+  setTimeout(() => VEIL.dialogue.play([
+    { who: 'narrator', text: '✦ Echo of the Veil — “' + ec.title + '”' },
+    { who: 'narrator', text: ec.text },
+  ]), 0);
+};
+S.showMural = function (i) {
+  const m = S.murals[i % S.murals.length];
+  setTimeout(() => VEIL.dialogue.play([{ who: 'narrator', text: m }]), 0);
+};
+
 S.hints = {
   move: 'Move with A / D · Jump with Space',
   jump: 'Hold Space to jump higher · double-back if you fall',

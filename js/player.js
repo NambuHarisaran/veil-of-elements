@@ -81,6 +81,7 @@ class Player {
     this.armWind = 0;            // attack follow-through
     this.lookY = 0; this.lean = 0;
     this.landAnim = 0; this.launchAnim = 0;
+    this.turnT = 0; this._animFace = 1;   // quick-pivot squash on direction change
     this.ghosts = [];           // dash afterimages
     this.cape = this._initCape();
     // foot planting (world-locked stance feet) + pose blending
@@ -276,8 +277,14 @@ class Player {
     this.breath += dt;
     this.landAnim = Math.max(0, this.landAnim - dt * 3.2);
     this.launchAnim = Math.max(0, this.launchAnim - dt * 3.6);
-    // squash & stretch damped spring back to rest
-    const k = 320, c = 16;
+    // quick pivot when changing facing while moving — masks the instant mirror
+    if (this.face !== this._animFace) {
+      if (Math.abs(this.vx) > 40 || this.state === 'run') this.turnT = 1;
+      this._animFace = this.face;
+    }
+    this.turnT = Math.max(0, this.turnT - dt / 0.12);
+    // squash & stretch spring — near-critical damping settles cleanly (no ringing jitter)
+    const k = 320, c = 26;
     this.sqVel += (-k * this.sq - c * this.sqVel) * dt;
     this.sq = U.clamp(this.sq + this.sqVel * dt, -0.45, 0.55);
     // run leg phase — cadence matched to speed so a foot-locked stance doesn't skate
@@ -285,13 +292,13 @@ class Player {
     this._footUpdate(dt);
     // pose-blend bookkeeping: cross-fade control targets when the state changes
     if (this.state !== this._lastDrawnState) {
-      const snappy = this.state === 'attack' || this.state === 'dash' || this.dashTime > 0 || this.slamming ||
-        this._lastDrawnState === 'attack';
+      // snap into fast actions; cross-fade everything else (incl. attack recovery)
+      const snappy = this.state === 'attack' || this.state === 'dash' || this.dashTime > 0 || this.slamming;
       this._blendFrom = snappy ? null : this._lastTargets;
       this._blendT = snappy ? 1 : 0;
       this._lastDrawnState = this.state;
     }
-    if (this._blendT < 1) this._blendT = Math.min(1, this._blendT + dt / 0.10);
+    if (this._blendT < 1) this._blendT = Math.min(1, this._blendT + dt / 0.14);
     // body lean from horizontal velocity (+ a little when airborne)
     const target = U.clamp(this.vx / C.RUN, -1, 1) * (this.onGround ? 0.14 : 0.20);
     this.lean = U.lerp(this.lean, target, U.clamp(dt * 10, 0, 1));
@@ -453,7 +460,7 @@ class Player {
     // ---- legs ----
     let footF, footB, kneeBend = 1;
     if (st === 'run') {
-      bob = -Math.abs(Math.sin(this.legPhase)) * 2.2;
+      bob = (Math.cos(this.legPhase * 2) - 1) * 1.1;   // smooth double-bounce (no kink)
       footF = { x: this.feet[0].x + RIG.hipX, y: this.feet[0].y };
       footB = { x: this.feet[1].x - RIG.hipX, y: this.feet[1].y };
     } else if (st === 'jump' || st === 'fall' || st === 'glide') {
@@ -567,7 +574,7 @@ class Player {
     ctx.save();
     let alpha = 1;
     if (this.dead) alpha *= U.clamp(1 - this.deadT / 1.6, 0, 1);
-    if (this.iframe > 0 && Math.floor(this.e.time * 30) % 2 === 0 && this.dashTime <= 0) alpha *= 0.45;
+    if (this.iframe > 0 && this.dashTime <= 0) alpha *= 0.62 + 0.3 * Math.sin(this.e.time * 34);   // soft shimmer, not a hard strobe
     ctx.globalAlpha = alpha;
 
     // time-slow aura
@@ -579,6 +586,7 @@ class Player {
     ctx.rotate(this.lean * 0.5);
     let sy = 1 - this.sq, sx = 1 + this.sq * 0.6;
     if (!this.onGround && !this.dead) { const stv = U.clamp(this.vy / 2400, -0.18, 0.24); sy *= 1 + stv; sx *= 1 - stv * 0.5; }
+    if (this.turnT > 0) sx *= U.lerp(1, 0.55, U.ease.inOut(this.turnT));   // quick pivot squash
     ctx.scale(sx, sy);
 
     if (this.dead) this._drawDead(ctx);

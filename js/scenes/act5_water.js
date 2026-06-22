@@ -94,6 +94,10 @@ VEIL.scenes['act5_water'] = class WaterScene {
         // arena gate: summon the reflection
         { x: 4260, y: 0, w: 70, h: 800, once: true, onEnter: () => self._arena() },
       ],
+      interactables: [
+        { x: 320, y: 600, markY: 576, r: 70, label: 'Worn rune', color: '#9a6bff', once: true, keepMarker: true, sfx: 'fragment',
+          onInteract: () => VEIL.story.revealEcho(VEIL.engine, 'mirror') },
+      ],
       goal: { x: 5020, y: 0, color: '#5fd0ff', show: false },
       paintBg: (ctx, w, t) => self._bg(ctx, w, t),
       paintMid: (ctx, w, t) => self._mid(ctx, w, t),

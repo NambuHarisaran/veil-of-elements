@@ -183,6 +183,12 @@ VEIL.scenes['act3_forest'] = class ForestScene {
         },
       ],
 
+      /* ==== LORE ==== */
+      interactables: [
+        { x: 300, y: 580, markY: 556, r: 70, label: 'Worn rune', color: '#9a6bff', once: true, keepMarker: true, sfx: 'fragment',
+          onInteract: () => VEIL.story.revealEcho(VEIL.engine, 'roots') },
+      ],
+
       /* ==== GOAL ==== */
       goal: {
         x: 4680,

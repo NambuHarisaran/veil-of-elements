@@ -51,6 +51,7 @@ VEIL.scenes['act2_descent'] = class DescentScene {
         { x: 430, y: 545, r: 70, label: 'Read mural', color: '#9fb4d8', once: true, keepMarker: true, sfx: 'whisper', onInteract: () => self._examine(0) },
         { x: 1300, y: 525, r: 72, label: 'Rest at shrine', color: '#f4c560', sfx: 'heal', onInteract: (it, p) => self._rest(p) },
         { x: 3120, y: 525, r: 70, label: 'Read mural', color: '#9fb4d8', once: true, keepMarker: true, sfx: 'whisper', onInteract: () => self._examine(1) },
+        { x: 1780, y: 600, markY: 576, r: 70, label: 'Worn rune', color: '#9a6bff', once: true, keepMarker: true, sfx: 'fragment', onInteract: () => VEIL.story.revealEcho(VEIL.engine, 'fear') },
       ],
       paintBg: (ctx, w, t) => self._bg(ctx, w, t),
       paintFg: (ctx, w, t) => self._fg(ctx, w, t),

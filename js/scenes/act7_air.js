@@ -131,6 +131,10 @@ VEIL.scenes['act7_air'] = class AirScene {
         // arena seal — start the boss
         { x: 4900, y: 0, w: 60, h: 720, once: true, onEnter: () => self._startBoss() },
       ],
+      interactables: [
+        { x: 300, y: 600, markY: 576, r: 70, label: 'Worn rune', color: '#9a6bff', once: true, keepMarker: true, sfx: 'fragment',
+          onInteract: () => VEIL.story.revealEcho(VEIL.engine, 'wind') },
+      ],
       goal: { x: GOAL_X, y: 0, color: '#f4c560', onReach: () => {} },
       paintBg: (ctx, w, t) => self._bg(ctx, w, t),
       paintMid: (ctx, w, t) => self._mid(ctx, w, t),
