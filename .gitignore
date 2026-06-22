@@ -1,0 +1,14 @@
+# OS / editor cruft
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*~
+
+# Node (only used for the optional dev http-server)
+node_modules/
+npm-debug.log*
+
+# Logs / scratch
+*.log
+_script_extract.txt

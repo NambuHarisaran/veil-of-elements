@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Player Lab — Veil</title>
+<style>
+  html,body{margin:0;background:#0c0820;color:#cdbcf2;}
+  body{background:radial-gradient(circle at 50% 30%, #1a1330, #0c0820 70%);}
+  #lab{display:block;margin:0 auto;}
+  .hint{position:fixed;top:8px;left:8px;color:#9a8cc0;font:13px monospace;}
+</style>
+</head>
+<body>
+  <div class="hint">Player Lab — procedural rig preview</div>
+  <canvas id="lab" width="1280" height="720"></canvas>
+  <script src="js/core.js"></script>
+  <script src="js/player.js"></script>
+  <script>
+  const U = VEIL.U, draw = VEIL.draw;
+  const cv = document.getElementById('lab'), ctx = cv.getContext('2d');
+
+  // minimal engine/world mocks
+  const engine = {
+    time: 0, dt: 0, timeScale: 1, paused: false, W: 1280, H: 720,
+    input: { down: () => false, pressed: () => false },
+    audio: { sfx() {}, resume() {} },
+    camera: { shake() {} },
+    freeze() {},
+    state: { hp: 100, maxHp: 100, abilities: { dash: true, block: true, groundSlam: false, timeSlow: false, emberShot: false, glide: true } },
+  };
+  const particles = new VEIL.Particles();
+  const world = {
+    engine, particles, camera: { shake() {} }, solids: [], enemies: [], hazards: [],
+    killY: 99999, spawnDamage() {}, spawnProjectile() {}, onPlayerDeath() {},
+    onPlayerStrike() {}, onSlam() {}, onParry() {},
+  };
+
+  // states cycle automatically; override with ?state=run or window.LAB.state
+  const STATES = {
+    IDLE: (p) => { p.state = 'idle'; p.onGround = true; p.vx = 0; },
+    RUN: (p) => { p.state = 'run'; p.onGround = true; p.vx = VEIL.PCONST.RUN; },
+    JUMP: (p) => { p.state = 'jump'; p.onGround = false; p.vx = 120; p.vy = -500; },
+    FALL: (p) => { p.state = 'fall'; p.onGround = false; p.vx = 90; p.vy = 600; },
+    GLIDE: (p) => { p.state = 'glide'; p.onGround = false; p.gliding = true; p.vx = 220; p.vy = 210; },
+    'ATK·LIGHT': (p, dt) => { p.onGround = true; p.vx = 0; p.atkType = 'light'; p.state = 'attack'; p._atk = (p._atk || 0) - dt; if (p._atk <= 0) p._atk = 0.26; p.atkTimer = p._atk; },
+    'ATK·HEAVY': (p, dt) => { p.onGround = true; p.vx = 0; p.atkType = 'heavy'; p.state = 'attack'; p._atk = (p._atk || 0) - dt; if (p._atk <= 0) p._atk = 0.42; p.atkTimer = p._atk; },
+    BLOCK: (p) => { p.state = 'idle'; p.onGround = true; p.vx = 0; p.blocking = true; p.parryWin = 0.1; },
+    DASH: (p) => { p.state = 'run'; p.onGround = true; p.vx = VEIL.PCONST.DASH; p.dashTime = 0.16; },
+    SLAM: (p) => { p.state = 'fall'; p.onGround = false; p.slamming = true; p.vx = 0; p.vy = 1400; },
+  };
+  window.LAB = { state: null, scale: 6 };
+  const order = Object.keys(STATES);
+  const big = new VEIL.Player(world, 0, 0);
+  const small = order.map(() => new VEIL.Player(world, 0, 0));
+  let cyc = 0, cycT = 0;
+  const qp = new URLSearchParams(location.search).get('state');
+
+  let last = performance.now();
+  function frame(now) {
+    let dt = Math.min((now - last) / 1000, 1 / 30); last = now;
+    engine.time += dt; cycT += dt; if (cycT > 1.6) { cycT = 0; cyc = (cyc + 1) % order.length; }
+    ctx.clearRect(0, 0, 1280, 720);
+    particles.update(dt);
+
+    const curKey = window.LAB.state || qp || order[cyc];
+    const setup = STATES[curKey] || STATES.IDLE;
+    const S = window.LAB.scale;
+    // big hero figure
+    const ox = 1280 * 0.5, oy = 540;
+    big.face = 1; big.blocking = false; big.gliding = false; big.dashTime = 0; big.slamming = false; big.hitFlash = 0; big.dead = false;
+    setup(big, dt); big.anim += dt; big._animUpdate(dt);
+    ctx.strokeStyle = 'rgba(154,107,255,.2)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ox - 300, oy); ctx.lineTo(ox + 300, oy); ctx.stroke();
+    ctx.save(); ctx.translate(ox, oy); ctx.scale(S, S); big.x = -big.w / 2; big.y = -big.h; big.draw(ctx); ctx.restore();
+    particles.draw(ctx);
+    draw.text(ctx, curKey, ox, 120, { size: 34, color: '#f4c560', glow: '#9a6bff', blur: 14, font: 'Cinzel, serif', spacing: '4px' });
+
+    // strip of all states (small)
+    order.forEach((k, i) => {
+      const sx = 70 + i * 122, sy = 690, sp = small[i];
+      sp.face = 1; sp.blocking = false; sp.gliding = false; sp.dashTime = 0; sp.slamming = false; sp.hitFlash = 0; sp.dead = false;
+      STATES[k](sp, dt); sp.anim += dt; sp._animUpdate(dt);
+      ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); sp.x = -sp.w / 2; sp.y = -sp.h; sp.draw(ctx); ctx.restore();
+      draw.text(ctx, k, sx, sy + 16, { size: 9, color: '#9a8cc0', font: 'monospace' });
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

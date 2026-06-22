@@ -1,0 +1,327 @@
+/* ===========================================================
+   Veil of the Elements — UI / overlay styling
+   Symbolic palette: gold (light) vs violet (dark)
+   =========================================================== */
+
+:root{
+  --gold:#f4c560;
+  --gold-soft:#ffe6a8;
+  --violet:#9a6bff;
+  --violet-soft:#c9b3ff;
+  --ink:#0a0710;
+  --ink-2:#140e22;
+  --paper:#f4ecd8;
+  --glass:rgba(20,14,30,.55);
+  --glass-line:rgba(244,197,96,.30);
+  --shadow:0 18px 60px rgba(0,0,0,.55);
+  font-size:16px;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  background:#000;
+  color:var(--paper);
+  font-family:"Spectral", Georgia, serif;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:default;
+}
+
+#stage{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(120% 120% at 50% 0%, #15102a 0%, #0a0712 55%, #050308 100%);
+}
+
+#game{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  image-rendering:auto;
+}
+
+.hidden{ display:none !important; }
+
+/* ---------- Cinematic letterbox bars ---------- */
+.cine-bar{
+  position:absolute;
+  left:0; right:0;
+  height:0;
+  background:#000;
+  z-index:30;
+  transition:height .6s cubic-bezier(.7,0,.2,1);
+  pointer-events:none;
+}
+#bar-top{ top:0; }
+#bar-bottom{ bottom:0; }
+.cine #bar-top, .cine #bar-bottom{ height:9%; }
+
+/* ---------- Dialogue ---------- */
+#dialogue{
+  position:absolute;
+  left:50%; bottom:6%;
+  transform:translateX(-50%) translateY(14px);
+  width:min(960px, 86%);
+  display:flex;
+  gap:18px;
+  align-items:flex-end;
+  z-index:40;
+  opacity:0;
+  transition:opacity .35s ease, transform .35s ease;
+}
+#dialogue.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+#dlg-portrait{
+  flex:0 0 96px;
+  width:96px; height:96px;
+  border-radius:14px;
+  background:linear-gradient(160deg,#241a3a,#0e0a1c);
+  border:1px solid var(--glass-line);
+  box-shadow:var(--shadow), inset 0 0 30px rgba(154,107,255,.25);
+  position:relative;
+  overflow:hidden;
+}
+#dlg-portrait canvas{ position:absolute; inset:0; width:100%; height:100%; }
+
+#dlg-body{
+  flex:1;
+  background:var(--glass);
+  backdrop-filter:blur(10px) saturate(1.2);
+  -webkit-backdrop-filter:blur(10px) saturate(1.2);
+  border:1px solid var(--glass-line);
+  border-radius:14px;
+  padding:16px 22px 18px;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+#dlg-body::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:14px;
+  pointer-events:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+#dlg-name{
+  font-family:"Cinzel", serif;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-size:.82rem;
+  color:var(--gold);
+  margin-bottom:6px;
+  text-shadow:0 0 18px rgba(244,197,96,.4);
+}
+#dlg-text{
+  font-size:1.16rem;
+  line-height:1.55;
+  color:#f3ecdd;
+  min-height:1.6em;
+  font-weight:300;
+}
+#dlg-cont{
+  position:absolute;
+  right:16px; bottom:8px;
+  color:var(--gold);
+  opacity:.0;
+  animation:bob 1s ease-in-out infinite;
+  font-size:.9rem;
+}
+#dlg-cont.ready{ opacity:.85; }
+@keyframes bob{ 50%{ transform:translateY(4px);} }
+
+#dlg-choices{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+.choice{
+  text-align:left;
+  font-family:"Spectral", serif;
+  font-size:1.02rem;
+  color:#efe7d6;
+  background:linear-gradient(100deg, rgba(154,107,255,.10), rgba(244,197,96,.05));
+  border:1px solid rgba(244,197,96,.22);
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  transition:transform .12s ease, border-color .2s, background .2s, box-shadow .2s;
+}
+.choice::before{ content:"◆  "; color:var(--violet-soft); font-size:.7em; vertical-align:middle; }
+.choice:hover, .choice.sel{
+  transform:translateX(6px);
+  border-color:var(--gold);
+  background:linear-gradient(100deg, rgba(154,107,255,.22), rgba(244,197,96,.14));
+  box-shadow:0 0 26px rgba(244,197,96,.18);
+}
+
+/* ---------- Banner (realm titles / fragments) ---------- */
+#banner{
+  position:absolute;
+  left:50%; top:42%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  z-index:35;
+  opacity:0;
+  transition:opacity 1s ease;
+  pointer-events:none;
+  width:90%;
+}
+#banner.show{ opacity:1; }
+#banner-kicker{
+  font-family:"Cinzel", serif;
+  letter-spacing:.5em;
+  text-transform:uppercase;
+  font-size:.78rem;
+  color:var(--violet-soft);
+  opacity:.85;
+  margin-bottom:10px;
+  padding-left:.5em;
+}
+#banner-title{
+  font-family:"Cinzel", serif;
+  font-weight:600;
+  font-size:clamp(2rem,5vw,3.6rem);
+  letter-spacing:.04em;
+  color:var(--gold-soft);
+  text-shadow:0 0 40px rgba(244,197,96,.45), 0 2px 30px rgba(0,0,0,.6);
+}
+#banner-sub{
+  margin-top:14px;
+  font-style:italic;
+  font-size:clamp(1rem,2vw,1.3rem);
+  color:#e7ddc7;
+  opacity:.9;
+}
+#banner .rule{
+  width:0; height:1px; margin:16px auto 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  transition:width 1.2s ease .2s;
+}
+#banner.show .rule{ width:min(420px,60%); }
+
+/* ---------- Toast ---------- */
+#toast{
+  position:absolute;
+  left:50%; bottom:18%;
+  transform:translate(-50%,10px);
+  z-index:36;
+  background:var(--glass);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--glass-line);
+  border-radius:999px;
+  padding:9px 20px;
+  font-size:.95rem;
+  letter-spacing:.03em;
+  color:var(--gold-soft);
+  box-shadow:var(--shadow);
+  opacity:0;
+  transition:opacity .4s ease, transform .4s ease;
+}
+#toast.show{ opacity:1; transform:translate(-50%,0); }
+
+/* ---------- Overlay (pause / menus) ---------- */
+#overlay{
+  position:absolute; inset:0;
+  z-index:50;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(120% 120% at 50% 30%, rgba(10,7,16,.6), rgba(5,3,8,.92));
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+.panel{
+  width:min(520px,86%);
+  background:var(--glass);
+  border:1px solid var(--glass-line);
+  border-radius:18px;
+  padding:30px 32px;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.panel h2{
+  font-family:"Cinzel", serif;
+  font-weight:600;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--gold);
+  font-size:1.2rem;
+  margin-bottom:18px;
+}
+.menu-btn{
+  display:block;
+  width:100%;
+  font-family:"Cinzel", serif;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-size:.92rem;
+  color:#efe7d6;
+  background:linear-gradient(100deg, rgba(154,107,255,.12), rgba(244,197,96,.05));
+  border:1px solid rgba(244,197,96,.22);
+  border-radius:12px;
+  padding:13px;
+  margin:10px 0;
+  cursor:pointer;
+  transition:transform .12s ease, border-color .2s, box-shadow .2s, background .2s;
+}
+.menu-btn:hover{
+  transform:translateY(-2px);
+  border-color:var(--gold);
+  box-shadow:0 0 30px rgba(244,197,96,.2);
+  background:linear-gradient(100deg, rgba(154,107,255,.22), rgba(244,197,96,.12));
+}
+.panel .hint{ margin-top:14px; font-size:.82rem; color:#b9b0a0; opacity:.8; font-style:italic; }
+.kbd{
+  display:inline-block; min-width:22px; padding:2px 7px; margin:0 2px;
+  font-family:"Cinzel",serif; font-size:.72rem; color:var(--gold-soft);
+  border:1px solid var(--glass-line); border-radius:6px; background:rgba(0,0,0,.3);
+}
+
+/* ---------- Fade transition ---------- */
+#fader{
+  position:absolute; inset:0;
+  z-index:60;
+  background:#050308;
+  opacity:1;
+  pointer-events:none;
+  transition:opacity .6s ease;
+}
+#fader.clear{ opacity:0; }
+
+/* ---------- Loading ---------- */
+#loading{
+  position:absolute; inset:0;
+  z-index:70;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;
+  background:radial-gradient(120% 120% at 50% 40%, #161031, #07040d);
+  transition:opacity .6s ease;
+}
+#loading.gone{ opacity:0; pointer-events:none; }
+.load-sigil{
+  width:74px; height:74px;
+  border-radius:50%;
+  border:1px solid rgba(244,197,96,.4);
+  box-shadow:0 0 50px rgba(154,107,255,.5), inset 0 0 30px rgba(244,197,96,.25);
+  position:relative;
+  animation:spin 8s linear infinite;
+}
+.load-sigil::before, .load-sigil::after{
+  content:""; position:absolute; inset:14px; border-radius:50%;
+  border:1px solid rgba(154,107,255,.5);
+}
+.load-sigil::after{ inset:26px; border-color:rgba(244,197,96,.6); }
+@keyframes spin{ to{ transform:rotate(360deg);} }
+.load-text{
+  font-family:"Cinzel", serif;
+  letter-spacing:.4em;
+  text-transform:uppercase;
+  font-size:.8rem;
+  color:var(--gold);
+  opacity:.7;
+  padding-left:.4em;
+  animation:pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse{ 50%{ opacity:.3;} }

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Veil of the Elements — The Missing Spirit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game" width="1280" height="720"></canvas>
+
+    <!-- Cinematic letterbox bars -->
+    <div id="bar-top" class="cine-bar"></div>
+    <div id="bar-bottom" class="cine-bar"></div>
+
+    <!-- DOM dialogue overlay -->
+    <div id="dialogue" class="hidden">
+      <div id="dlg-portrait"></div>
+      <div id="dlg-body">
+        <div id="dlg-name"></div>
+        <div id="dlg-text"></div>
+        <div id="dlg-choices"></div>
+        <div id="dlg-cont">▾</div>
+      </div>
+    </div>
+
+    <!-- Banner (realm titles, fragment-of-truth, etc.) -->
+    <div id="banner" class="hidden">
+      <div id="banner-kicker"></div>
+      <div id="banner-title"></div>
+      <div id="banner-sub"></div>
+    </div>
+
+    <!-- Toast (pickups / hints) -->
+    <div id="toast" class="hidden"></div>
+
+    <!-- Pause / menu overlay -->
+    <div id="overlay" class="hidden"></div>
+
+    <!-- Fade transition layer -->
+    <div id="fader"></div>
+
+    <!-- Loading -->
+    <div id="loading">
+      <div class="load-sigil"></div>
+      <div class="load-text">Veil of the Elements</div>
+    </div>
+  </div>
+
+  <!-- Engine + game (classic scripts, ordered) -->
+  <script src="js/core.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/platformer.js"></script>
+  <script src="js/story.js"></script>
+  <script src="js/scenes/title.js"></script>
+  <script src="js/scenes/act1_hall.js"></script>
+  <script src="js/scenes/act2_descent.js"></script>
+  <script src="js/scenes/act3_forest.js"></script>
+  <script src="js/scenes/act4_earth.js"></script>
+  <script src="js/scenes/act5_water.js"></script>
+  <script src="js/scenes/act6_fire.js"></script>
+  <script src="js/scenes/act7_air.js"></script>
+  <script src="js/scenes/act8_return.js"></script>
+  <script src="js/scenes/act9_ending.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
